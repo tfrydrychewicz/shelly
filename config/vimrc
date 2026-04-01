@@ -1,0 +1,177 @@
+" ============================================================================
+" 1. PLUGIN MANAGER (vim-plug)
+" ============================================================================
+call plug#begin('~/.vim/plugged')
+
+" --- Core IDE Features ---
+Plug 'neoclide/coc.nvim', {'branch': 'release'}   " VS Code-like autocompletion & LSP
+Plug 'junegunn/fzf', { 'do': { -> fzf#install() } } " Fuzzy finder core
+Plug 'junegunn/fzf.vim'                           " FZF Vim integration
+Plug 'preservim/nerdtree'                         " Visual file explorer
+Plug 'jiangmiao/auto-pairs'                       " Auto-close brackets and quotes
+
+" --- Language Support ---
+Plug 'fatih/vim-go', { 'do': ':GoUpdateBinaries' } " The absolute best Go plugin
+Plug 'sheerun/vim-polyglot'                       " Syntax highlighting for 100+ languages
+
+" --- Git Integration ---
+Plug 'tpope/vim-fugitive'                         " The ultimate Git wrapper
+Plug 'airblade/vim-gitgutter'                     " Shows git diff markers in the sign column
+
+" --- Aesthetics & UI ---
+Plug 'tomasiser/vim-code-dark'                     " VSCode Dark+ theme
+Plug 'vim-airline/vim-airline'                    " Powerful status bar
+Plug 'vim-airline/vim-airline-themes'
+
+Plug 'mhinz/vim-startify'
+Plug 'ryanoasis/vim-devicons'
+
+Plug 'madox2/vim-ai'
+
+Plug 'puremourning/vimspector'
+
+call plug#end()
+
+" ============================================================================
+" 2. CORE SETTINGS
+" ============================================================================
+syntax on                     " Enable syntax highlighting
+set number                    " Show absolute line numbers
+set relativenumber            " Show relative line numbers (great for jumping)
+set tabstop=4                 " 1 tab = 4 spaces
+set shiftwidth=4              " Indentation amount
+set expandtab                 " Convert tabs to spaces
+set smartindent               " Auto-indent new lines
+set wrap!                     " Disable line wrapping
+set ignorecase                " Ignore case when searching
+set smartcase                 " ...unless you type a capital letter
+set incsearch                 " Show search matches as you type
+set hlsearch                  " Highlight search results
+set updatetime=300            " Faster updates (good for gitgutter and CoC)
+set signcolumn=yes            " Always show the sign column (prevents text shifting)
+set clipboard=unnamedplus     " Use system clipboard
+
+" ============================================================================
+" 3. THEMING
+" ============================================================================
+autocmd vimenter * ++nested colorscheme codedark
+set background=dark
+let g:airline_theme='codedark'
+
+" ============================================================================
+" 4. KEY MAPPINGS & SHORTCUTS
+" ============================================================================
+" Set Space as the leader key (easier to reach than default '\')
+let mapleader = " "
+
+" --- FZF (Fuzzy Finding) ---
+nnoremap <leader>f :Files<CR>
+nnoremap <leader>g :Rg<CR>
+nnoremap <leader>b :Buffers<CR>
+
+" --- NERDTree ---
+nnoremap <leader>n :NERDTreeToggle<CR>
+let NERDTreeShowHidden=1 " Show dotfiles
+
+" ============================================================================
+" 5. PLUGIN-SPECIFIC CONFIGURATIONS
+" ============================================================================
+
+" --- vim-go ---
+" Use goimports to automatically format and organize imports on save
+let g:go_fmt_command = "goimports"
+let g:go_highlight_types = 1
+let g:go_highlight_fields = 1
+let g:go_highlight_functions = 1
+let g:go_highlight_function_calls = 1
+
+" --- CoC (Conquer of Completion) ---
+" Use Tab and Shift-Tab to navigate autocomplete menu
+inoremap <silent><expr> <TAB>
+      \ coc#pum#visible() ? coc#pum#next(1) :
+      \ CheckBackspace() ? "\<Tab>" :
+      \ coc#refresh()
+inoremap <expr><S-TAB> coc#pum#visible() ? coc#pum#prev(1) : "\<C-h>"
+
+" Make <CR> (Enter) to accept selected completion item
+inoremap <silent><expr> <CR> coc#pum#visible() ? coc#pum#confirm() : "\<CR>"
+
+" GoTo code navigation.
+nmap <silent> gd <Plug>(coc-definition)
+nmap <silent> gy <Plug>(coc-type-definition)
+nmap <silent> gi <Plug>(coc-implementation)
+nmap <silent> gr <Plug>(coc-references)
+
+function! CheckBackspace() abort
+  let col = col('.') - 1
+  return !col || getline('.')[col - 1]  =~# '\s'
+endfunction
+
+let g:fzf_layout = { 'window': { 'width': 0.8, 'height': 0.8 } }
+
+let g:vim_ai_edit = {
+\  'options': {
+\    'model': 'gpt-5.4',
+\    'temperature': 0.1
+\  },
+\  'initial_prompt': ">>> system\nYou are a strict code editor. Return ONLY the raw, modified code. Do NOT wrap your response in markdown formatting. Do not include any explanations.\n"
+\}
+
+" ============================================================================
+" DEBUGGING (VIMSPECTOR)
+" ============================================================================
+" Tell Vimspector to use the standard VS Code shortcut keys
+let g:vimspector_enable_mappings = 'VISUAL_STUDIO'
+
+" Make the Vimspector UI look a bit cleaner
+let g:vimspector_ui_mode = 'horizontal'
+
+" ============================================================================
+" RUN CODE (F4)
+" ============================================================================
+" Press F4 to open a horizontal split at the bottom and run the current file
+" ============================================================================
+" RUN CODE (F4) - NEOVIM/VIM COMPATIBLE
+" ============================================================================
+function! RunMyCode()
+  " 1. Create a clean 15-line split at the very bottom
+  botright 15split
+  
+  " 2. Determine the command based on the file language
+  let l:cmd = ''
+  if &filetype ==# 'go'
+    let l:cmd = 'go run ' . expand('%')
+  elseif &filetype ==# 'python'
+    let l:cmd = 'python3 ' . expand('%')
+  elseif &filetype ==# 'javascript'
+    let l:cmd = 'node ' . expand('%')
+  elseif &filetype ==# 'sh'
+    let l:cmd = 'bash ' . expand('%')
+  else
+    echo "No run command configured for this filetype."
+    return
+  endif
+
+  " 3. Open the terminal correctly based on the editor engine
+  if has('nvim')
+    execute 'terminal ' . l:cmd
+    " Keeps you in Normal mode so you can easily scroll through panics/errors
+    stopinsert
+  else
+    execute 'terminal ++curwin ' . l:cmd
+  endif
+endfunction
+
+" Map F4 to call the function universally
+nnoremap <silent> <F4> :call RunMyCode()<CR>
+
+
+" Keep the explorer on the left and set its width to 30 columns
+let g:netrw_winsize = 30
+let g:netrw_altv = 1
+
+" Hide the annoying banner at the top
+let g:netrw_banner = 0
+
+" View files as a tree
+let g:netrw_liststyle = 3

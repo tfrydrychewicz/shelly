@@ -1,0 +1,75 @@
+# If you come from bash you might have to change your $PATH.
+export PATH=$HOME/bin:$HOME/.local/bin:/usr/local/bin:$PATH
+
+# Path to your Oh My Zsh installation.
+export ZSH="$HOME/.oh-my-zsh"
+
+ZSH_THEME="robbyrussell"
+
+plugins=(git z nvm colorize grc)
+
+export NVM_HOMEBREW=$(brew --prefix nvm)
+export ZSH_COLORIZE_TOOL=chroma
+export ZSH_COLORIZE_STYLE=monokai
+export ZSH_COLORIZE_CHROMA_FORMATTER=terminal256
+
+source $ZSH/oh-my-zsh.sh
+
+# Node.js version in right prompt
+_node_prompt_info() {
+  local node_version
+  node_version=$(node -v 2>/dev/null) || return
+  echo "%F{green}⬡ ${node_version%%.*}%f"
+}
+RPROMPT='$(_node_prompt_info)'
+
+# Auto-switch node version based on .nvmrc, restore default on exit
+_NVM_DEFAULT_VERSION=""
+_nvm_auto_use() {
+  local nvmrc="" dir="$PWD"
+  while [[ "$dir" != "/" ]]; do
+    [[ -f "$dir/.nvmrc" ]] && { nvmrc="$dir/.nvmrc"; break; }
+    dir="${dir:h}"
+  done
+
+  if [[ -n "$nvmrc" ]]; then
+    local required installed current
+    required="$(cat "$nvmrc" | tr -d '[:space:]')"
+    installed="$(nvm version "$required" 2>/dev/null)"
+
+    if [[ -z "$installed" || "$installed" == "N/A" ]]; then
+      print -P "%F{yellow}⬡ Node ${required} (from .nvmrc) is not installed. Run: nvm install%f"
+      return
+    fi
+
+    current="$(nvm current 2>/dev/null)"
+    if [[ "$installed" != "$current" ]]; then
+      [[ -z "$_NVM_DEFAULT_VERSION" ]] && _NVM_DEFAULT_VERSION="$current"
+      nvm use >/dev/null 2>&1
+      print -P "%F{green}⬡ Switched to Node ${installed}%f %F{white}(from .nvmrc)%f"
+    fi
+  elif [[ -n "$_NVM_DEFAULT_VERSION" ]]; then
+    nvm use "$_NVM_DEFAULT_VERSION" >/dev/null 2>&1
+    print -P "%F{cyan}⬡ Restored Node ${_NVM_DEFAULT_VERSION}%f"
+    _NVM_DEFAULT_VERSION=""
+  fi
+}
+add-zsh-hook chpwd _nvm_auto_use
+_nvm_auto_use
+
+if command -v ccat >/dev/null 2>&1 && command -v cless >/dev/null 2>&1; then
+  alias cat=ccat
+  alias less=cless
+else
+  alias cat='grc cat'
+  alias less='grc less'
+fi
+
+if command -v lsd >/dev/null 2>&1; then
+  alias ls=lsd
+  alias ll='lsd -l'
+  alias la='lsd -la'
+  alias tree='lsd --tree'
+else
+  alias ls='grc ls -p'
+fi
