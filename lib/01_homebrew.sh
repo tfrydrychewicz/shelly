@@ -54,7 +54,7 @@ step_homebrew() {
   log_ok "brew --prefix: $(brew --prefix)"
 
   local f
-  for f in btop grc lsd nvm pipx ripgrep vim z chroma; do
+  for f in btop grc lazygit lsd nvm pipx ripgrep vim z chroma; do
     if brew list --formula "$f" >/dev/null 2>&1; then
       log_ok "formula '$f' is already installed"
     else
@@ -128,6 +128,6 @@ step_homebrew() {
     log_ok "sgpt verified: $(sgpt --version 2>/dev/null || echo 'run sgpt --help')"
   fi
 
-  log_ok "all formulae (incl. btop, lsd), casks (ghostty, 0xProto Nerd Font), and sgpt verified for this step"
+  log_ok "all formulae (incl. btop, lazygit, lsd), casks (ghostty, 0xProto Nerd Font), and sgpt verified for this step"
   return 0
 }
