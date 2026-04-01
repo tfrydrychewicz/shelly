@@ -54,7 +54,7 @@ step_homebrew() {
   log_ok "brew --prefix: $(brew --prefix)"
 
   local f
-  for f in btop grc lazygit lsd nvm pipx ripgrep vim z chroma; do
+  for f in btop fzf grc lazygit lsd nvm pipx ripgrep vim z chroma; do
     if brew list --formula "$f" >/dev/null 2>&1; then
       log_ok "formula '$f' is already installed"
     else
@@ -67,6 +67,20 @@ step_homebrew() {
       shelly_inc_installed
     fi
   done
+
+  # fzf: official helper wires Ctrl+T / Ctrl+R / Alt+C (shelly zshrc sources $(brew --prefix)/opt/fzf/shell/*.zsh)
+  local fzf_install
+  fzf_install="$(brew --prefix)/opt/fzf/install"
+  if [ -x "$fzf_install" ]; then
+    log_work "running fzf install (key-bindings + completion; zsh only; no auto-append to ~/.zshrc)..."
+    if "$fzf_install" --all --no-update-rc --no-bash --no-fish; then
+      log_ok "fzf install script finished"
+    else
+      log_warn "fzf install script exited non-zero — check $(brew --prefix)/opt/fzf; zsh integration may still work via zshrc"
+    fi
+  else
+    log_warn "missing $fzf_install — skipping fzf install script"
+  fi
 
   # Font casks (e.g. font-0xproto-nerd-font) live in the default homebrew/cask tap;
   # homebrew/cask-fonts was deprecated and removed.
@@ -128,6 +142,6 @@ step_homebrew() {
     log_ok "sgpt verified: $(sgpt --version 2>/dev/null || echo 'run sgpt --help')"
   fi
 
-  log_ok "all formulae (incl. btop, lazygit, lsd), casks (ghostty, 0xProto Nerd Font), and sgpt verified for this step"
+  log_ok "all formulae (incl. btop, fzf, lazygit, lsd), casks (ghostty, 0xProto Nerd Font), and sgpt verified for this step"
   return 0
 }

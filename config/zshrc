@@ -15,6 +15,16 @@ export ZSH_COLORIZE_CHROMA_FORMATTER=terminal256
 
 source $ZSH/oh-my-zsh.sh
 
+# fzf (brew): fuzzy completion + Ctrl+T (files), Ctrl+R (history), Alt+C (cd)
+# Paths are stable for Apple Silicon / Intel Homebrew; no brew on PATH required.
+for _fzf_home in /opt/homebrew/opt/fzf /usr/local/opt/fzf; do
+  [[ -r "$_fzf_home/shell/key-bindings.zsh" ]] || continue
+  source "$_fzf_home/shell/key-bindings.zsh"
+  [[ -r "$_fzf_home/shell/completion.zsh" ]] && source "$_fzf_home/shell/completion.zsh"
+  break
+done
+unset _fzf_home
+
 # Node.js version in right prompt
 _node_prompt_info() {
   local node_version
