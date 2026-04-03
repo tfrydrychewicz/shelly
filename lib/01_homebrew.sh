@@ -2,12 +2,12 @@
 # shelly — Homebrew, formulae, casks
 
 # Homebrew refuses to install font casks if the same filenames already exist in
-# ~/Library/Fonts (e.g. manual Nerd Font drop-in). Back up to SHELLY_BACKUP_ROOT then remove.
-shelly_backup_and_remove_conflicting_0xproto_nerd_fonts() {
+# ~/Library/Fonts (e.g. manual font drop-in). Back up to SHELLY_BACKUP_ROOT then remove.
+shelly_backup_and_remove_conflicting_fragment_mono_fonts() {
   local fontfile
   shopt -s nullglob
-  for fontfile in "$HOME/Library/Fonts"/0xProtoNerdFont*.ttf \
-    "$HOME/Library/Fonts"/0xProtoNerdFont*.otf; do
+  for fontfile in "$HOME/Library/Fonts"/FragmentMono*.ttf \
+    "$HOME/Library/Fonts"/FragmentMono*.otf; do
     log_info "conflicting user font blocks cask; backing up then removing: $fontfile"
     backup_file "$fontfile" || {
       shopt -u nullglob
@@ -82,23 +82,22 @@ step_homebrew() {
     log_warn "missing $fzf_install — skipping fzf install script"
   fi
 
-  # Font casks (e.g. font-0xproto-nerd-font) live in the default homebrew/cask tap;
-  # homebrew/cask-fonts was deprecated and removed.
-  log_ok "installing casks from default homebrew/cask (includes Nerd Fonts)"
+  # Font casks live in the default homebrew/cask tap.
+  log_ok "installing casks from default homebrew/cask"
 
   local c
-  for c in ghostty font-0xproto-nerd-font; do
+  for c in ghostty font-fragment-mono; do
     if brew list --cask "$c" >/dev/null 2>&1; then
       log_ok "cask '$c' is already installed"
     else
       log_work "installing cask '$c'..."
-      if [ "$c" = "font-0xproto-nerd-font" ]; then
-        shelly_backup_and_remove_conflicting_0xproto_nerd_fonts || return 1
+      if [ "$c" = "font-fragment-mono" ]; then
+        shelly_backup_and_remove_conflicting_fragment_mono_fonts || return 1
       fi
       if ! brew install --cask "$c"; then
-        if [ "$c" = "font-0xproto-nerd-font" ]; then
-          log_warn "first cask install failed — clearing 0xProto Nerd Font files in ~/Library/Fonts and retrying once..."
-          shelly_backup_and_remove_conflicting_0xproto_nerd_fonts || return 1
+        if [ "$c" = "font-fragment-mono" ]; then
+          log_warn "first cask install failed — clearing Fragment Mono files in ~/Library/Fonts and retrying once..."
+          shelly_backup_and_remove_conflicting_fragment_mono_fonts || return 1
           if brew install --cask "$c"; then
             log_ok "cask '$c' installed successfully (after retry)"
             shelly_inc_installed
@@ -142,6 +141,6 @@ step_homebrew() {
     log_ok "sgpt verified: $(sgpt --version 2>/dev/null || echo 'run sgpt --help')"
   fi
 
-  log_ok "all formulae (incl. btop, fzf, lazygit, lsd), casks (ghostty, 0xProto Nerd Font), and sgpt verified for this step"
+  log_ok "all formulae (incl. btop, fzf, lazygit, lsd), casks (ghostty, font-fragment-mono), and sgpt verified for this step"
   return 0
 }

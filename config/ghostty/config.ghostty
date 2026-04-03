@@ -1,12 +1,12 @@
 # shelly — Ghostty terminal (macOS):
 #   ~/Library/Application Support/com.mitchellh.ghostty/config.ghostty
-# Fonts: ghostty +list-fonts | grep -i 0x
+# Fonts: ghostty +list-fonts | grep -i fragment
 #
 # Colors: VS Code / Cursor default dark terminal (terminalColorRegistry.ts).
 
 # --- Font ---
-font-family = "0xProto Nerd Font Mono"
-# Ligatures (e.g. !=); Ghostty: font-feature (repeat or comma-separated)
+font-family = "Fragment Mono"
+# Optional OpenType features (Fragment Mono has limited ligatures vs Nerd fonts)
 font-feature = calt
 font-feature = liga
 
