@@ -1,12 +1,12 @@
 # shelly — Ghostty terminal (macOS):
 #   ~/Library/Application Support/com.mitchellh.ghostty/config.ghostty
-# Fonts: ghostty +list-fonts | grep -i fragment
+# Fonts: ghostty +list-fonts | grep -i fira
 #
 # Colors: VS Code / Cursor default dark terminal (terminalColorRegistry.ts).
 
 # --- Font ---
-font-family = "Fragment Mono"
-# Optional OpenType features (Fragment Mono has limited ligatures vs Nerd fonts)
+font-family = "Fira Code"
+# Ligatures (e.g. =>, !=); Fira Code supports calt/liga well
 font-feature = calt
 font-feature = liga
 
